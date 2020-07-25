@@ -1,16 +1,16 @@
-# Instalación
+# InstalaciÃ³n
 ```
- git clone https://github.com/Naraku86/ed-ava-api-testing.git
+ git clone https://github.com/Naraku86/Avalanche-Flash-Tes.git
  ```
  
- # Compilación
+ # CompilaciÃ³n
  
  ```
- cd ed-ava-api-testing/
+ cd Avalanche-Flash-Tes/
  mvn clean dependency:copy-dependencies package
  ```
  
- # Ejecución
+ # EjecuciÃ³n
  ```
  java -Dava.node.url=http://127.0.0.1:9650 -Dava.test.number=200 -Dava.verbose=true -classpath target/dependency/json-20200518.jar:target/AvalancheFlashTest-1.0-SNAPSHOT.jar com.ed.criptos.avalanche.testing.Main
  ```

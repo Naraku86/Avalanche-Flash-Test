@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.ed.criptos.avalanche.testing;
+package com.ed.criptos.avalanche.testing.threads;
 
 import com.ed.criptos.avalanche.testing.client.SentAVAPOST;
 import com.ed.criptos.avalanche.testing.utils.JsonUtils;
@@ -17,8 +17,9 @@ import org.json.JSONObject;
  *
  * @author Edgar
  */
-public class Keystore {
+public class Keystore implements Runnable {
 
+    private final int ID;
     private final String USERNAME;
     private final String PASSWORD;
     private final String METHOD_CREATE = "keystore.createUser";
@@ -32,10 +33,16 @@ public class Keystore {
     private final HashMap<String, Long> MTime = new HashMap<>();
     private final HashMap<String, Date> MTimestamp = new HashMap<>();
     private String user;
+    private ProccesStatistics statistics;
+    private long latencia_total;
+    private final boolean VERBOSE;
 
-    public Keystore(String USERNAME, String PASSWORD) {
+    public Keystore(int id, String USERNAME, String PASSWORD, ProccesStatistics statistics, boolean verbose) {
+        this.ID = id;
         this.USERNAME = USERNAME;
         this.PASSWORD = PASSWORD;
+        this.statistics = statistics;
+        this.VERBOSE = verbose;
     }
 
     public void import_user() {
@@ -122,8 +129,9 @@ public class Keystore {
     }
 
     public String toStringCSV() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd HH:mm:ss.SSS");
-        return String.format("%s," //USERNAME
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        return String.format("%d,"// ID
+                + "%s," //USERNAME
                 + "%s," //PASSWORD
                 + "%s," //user
                 + "%d," //METHOD_CREATE
@@ -133,41 +141,68 @@ public class Keystore {
                 + "%d," //METHOD_IMPORT
                 + "%s," //METHOD_IMPORT
                 + "%d," //METHOD_DELETE
-                + "%s,", //METHOD_DELETE
+                + "%s," //METHOD_DELETE
+                + "%d," //latencia_total
+                ,
+                 ID,
                 USERNAME,
                 PASSWORD,
                 user,
-                MTime.get(METHOD_CREATE),
-                sdf.format(MTimestamp.get(METHOD_CREATE)),
-                MTime.get(METHOD_EXPORT),
-                sdf.format(MTimestamp.get(METHOD_EXPORT)),
-                MTime.get(METHOD_IMPORT),
-                sdf.format(MTimestamp.get(METHOD_IMPORT)),
-                MTime.get(METHOD_DELETE),
-                sdf.format(MTimestamp.get(METHOD_DELETE))
+                MTime.containsKey(METHOD_CREATE)? MTime.get(METHOD_CREATE):0,
+                MTime.containsKey(METHOD_CREATE)?sdf.format(MTimestamp.get(METHOD_CREATE)):"-",
+                MTime.containsKey(METHOD_EXPORT)? MTime.get(METHOD_EXPORT):0,
+                MTime.containsKey(METHOD_EXPORT)?sdf.format(MTimestamp.get(METHOD_EXPORT)):"-",
+                MTime.containsKey(METHOD_IMPORT)? MTime.get(METHOD_IMPORT):0,
+                MTime.containsKey(METHOD_IMPORT)?sdf.format(MTimestamp.get(METHOD_IMPORT)):"-",
+                MTime.containsKey(METHOD_DELETE)? MTime.get(METHOD_DELETE):0,
+                MTime.containsKey(METHOD_DELETE)?sdf.format(MTimestamp.get(METHOD_DELETE)):"-",
+                latencia_total
         );
     }
 
     @Override
     public String toString() {
-        return String.format("username=%-20s password=%15s |"
+        return String.format("%5d username=%-20s password=%15s |"
                 + "create-success=%s create-time=%4d mls |"
                 + "export-success=%s export-time=%4d mls |"
                 + "import-success=%s import-time=%4d mls |"
                 + "delete-success=%s delete-time=%4d mls |"
+                + "latencia-total=%4d mls |"
                 + " user=%s",
+                ID,
                 USERNAME,
                 PASSWORD,
-                MSUCCES.get(METHOD_CREATE),
-                MTime.get(METHOD_CREATE),
-                MSUCCES.get(METHOD_EXPORT),
-                MTime.get(METHOD_EXPORT),
-                MSUCCES.get(METHOD_IMPORT),
-                MTime.get(METHOD_IMPORT),
-                MSUCCES.get(METHOD_DELETE),
-                MTime.get(METHOD_DELETE),
+                MSUCCES.containsKey(METHOD_CREATE) ? MSUCCES.get(METHOD_CREATE) : " ",
+                MTime.containsKey(METHOD_CREATE) ? MTime.get(METHOD_CREATE) : 0,
+                MSUCCES.containsKey(METHOD_EXPORT) ? MSUCCES.get(METHOD_EXPORT) : " ",
+                MTime.containsKey(METHOD_EXPORT) ? MTime.get(METHOD_EXPORT) : 0,
+                MSUCCES.containsKey(METHOD_IMPORT) ? MSUCCES.get(METHOD_IMPORT) : " ",
+                MTime.containsKey(METHOD_IMPORT) ? MTime.get(METHOD_IMPORT) : 0,
+                MSUCCES.containsKey(METHOD_DELETE) ? MSUCCES.get(METHOD_DELETE) : " ",
+                MTime.containsKey(METHOD_DELETE) ? MTime.get(METHOD_DELETE) : 0,
+                latencia_total,
                 user
         );
+    }
+
+    public void test() {
+        latencia_total = System.currentTimeMillis();
+        create();
+        exportUser();
+        delete();
+        import_user();
+        delete();
+        latencia_total = System.currentTimeMillis() - latencia_total;
+        statistics.addRegistroCSV(toStringCSV());
+        if (VERBOSE) {
+            System.out.println(toString());
+        }
+
+    }
+
+    @Override
+    public void run() {
+        test();
     }
 
 }

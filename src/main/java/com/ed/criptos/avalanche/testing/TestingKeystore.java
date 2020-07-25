@@ -10,8 +10,6 @@ import com.ed.criptos.avalanche.testing.threads.ProccesStatistics;
 import com.ed.criptos.avalanche.testing.utils.PasswordGenerator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *

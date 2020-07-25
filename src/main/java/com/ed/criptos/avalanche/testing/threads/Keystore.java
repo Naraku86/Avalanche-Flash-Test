@@ -55,6 +55,7 @@ public class Keystore implements Runnable {
                 success = false;
             }
         } catch (IOException | InterruptedException ex) {
+            ex.printStackTrace();
             success = false;
         }
         MTime.put(METHOD_IMPORT, System.currentTimeMillis() - latencia);
@@ -77,6 +78,7 @@ public class Keystore implements Runnable {
             }
 
         } catch (IOException | InterruptedException ex) {
+            ex.printStackTrace();
             success = false;
         }
         MTime.put(METHOD_EXPORT, System.currentTimeMillis() - latencia);
@@ -99,6 +101,7 @@ public class Keystore implements Runnable {
             }
 
         } catch (IOException | InterruptedException ex) {
+            ex.printStackTrace();
             success = false;
         }
         MTime.put(METHOD_DELETE, System.currentTimeMillis() - latencia);
@@ -121,6 +124,7 @@ public class Keystore implements Runnable {
             }
 
         } catch (IOException | InterruptedException ex) {
+            ex.printStackTrace();
             success = false;
         }
         MTime.put(METHOD_CREATE, System.currentTimeMillis() - latencia);

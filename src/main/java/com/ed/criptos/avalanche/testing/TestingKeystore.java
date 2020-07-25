@@ -18,7 +18,7 @@ import java.util.concurrent.Executors;
 public class TestingKeystore {
 
     private int numberTest = Integer.parseInt(System.getProperty("ava.test.number", "100"));
-    private int threadNumber = Integer.parseInt(System.getProperty("ava.test.thread.number", "100"));
+    private int threadNumber = Integer.parseInt(System.getProperty("ava.test.thread.number", "150"));
     private boolean verbose = Boolean.valueOf(System.getProperty("ava.verbose", "true"));
 
     private String testingName;

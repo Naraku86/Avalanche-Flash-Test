@@ -8,6 +8,8 @@ package com.ed.criptos.avalanche.testing;
 import com.ed.criptos.avalanche.testing.client.SentAVAPOST;
 import com.ed.criptos.avalanche.testing.utils.JsonUtils;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import org.json.JSONObject;
 
@@ -24,17 +26,18 @@ public class Keystore {
     private final String METHOD_EXPORT = "keystore.exportUser";
     private final String METHOD_IMPORT = "keystore.importUser";
     private final String REQUEST_PATH = "/ext/keystore";
-    private final SentAVAPOST SENDAVA = new SentAVAPOST(System.getProperty("url"));
+    private final SentAVAPOST SENDAVA = new SentAVAPOST(System.getProperty("ava.node.url"));
 
     private final HashMap<String, Boolean> MSUCCES = new HashMap<>();
     private final HashMap<String, Long> MTime = new HashMap<>();
+    private final HashMap<String, Date> MTimestamp = new HashMap<>();
     private String user;
 
     public Keystore(String USERNAME, String PASSWORD) {
         this.USERNAME = USERNAME;
         this.PASSWORD = PASSWORD;
     }
-    
+
     public void import_user() {
         JSONObject jsono = JsonUtils.getJSONAVA(METHOD_IMPORT, new JSONObject().put("username", USERNAME).put("password", PASSWORD).put("user", user));
         long latencia = System.currentTimeMillis();
@@ -49,8 +52,8 @@ public class Keystore {
         }
         MTime.put(METHOD_IMPORT, System.currentTimeMillis() - latencia);
         MSUCCES.put(METHOD_IMPORT, success);
+        MTimestamp.put(METHOD_IMPORT, new Date());
     }
-    
 
     public void exportUser() {
         JSONObject jsono = JsonUtils.getJSONAVA(METHOD_EXPORT, new JSONObject().put("username", USERNAME).put("password", PASSWORD));
@@ -71,6 +74,7 @@ public class Keystore {
         }
         MTime.put(METHOD_EXPORT, System.currentTimeMillis() - latencia);
         MSUCCES.put(METHOD_EXPORT, success);
+        MTimestamp.put(METHOD_EXPORT, new Date());
 
     }
 
@@ -92,6 +96,7 @@ public class Keystore {
         }
         MTime.put(METHOD_DELETE, System.currentTimeMillis() - latencia);
         MSUCCES.put(METHOD_DELETE, success);
+        MTimestamp.put(METHOD_DELETE, new Date());
 
     }
 
@@ -113,7 +118,34 @@ public class Keystore {
         }
         MTime.put(METHOD_CREATE, System.currentTimeMillis() - latencia);
         MSUCCES.put(METHOD_CREATE, success);
+        MTimestamp.put(METHOD_CREATE, new Date());
+    }
 
+    public String toStringCSV() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd HH:mm:ss.SSS");
+        return String.format("%s," //USERNAME
+                + "%s," //PASSWORD
+                + "%s," //user
+                + "%d," //METHOD_CREATE
+                + "%s," //METHOD_CREATE
+                + "%d," //METHOD_EXPORT
+                + "%s," //METHOD_EXPORT
+                + "%d," //METHOD_IMPORT
+                + "%s," //METHOD_IMPORT
+                + "%d," //METHOD_DELETE
+                + "%s,", //METHOD_DELETE
+                USERNAME,
+                PASSWORD,
+                user,
+                MTime.get(METHOD_CREATE),
+                sdf.format(MTimestamp.get(METHOD_CREATE)),
+                MTime.get(METHOD_EXPORT),
+                sdf.format(MTimestamp.get(METHOD_EXPORT)),
+                MTime.get(METHOD_IMPORT),
+                sdf.format(MTimestamp.get(METHOD_IMPORT)),
+                MTime.get(METHOD_DELETE),
+                sdf.format(MTimestamp.get(METHOD_DELETE))
+        );
     }
 
     @Override
@@ -128,13 +160,10 @@ public class Keystore {
                 PASSWORD,
                 MSUCCES.get(METHOD_CREATE),
                 MTime.get(METHOD_CREATE),
-                
                 MSUCCES.get(METHOD_EXPORT),
                 MTime.get(METHOD_EXPORT),
-                
                 MSUCCES.get(METHOD_IMPORT),
                 MTime.get(METHOD_IMPORT),
-                
                 MSUCCES.get(METHOD_DELETE),
                 MTime.get(METHOD_DELETE),
                 user

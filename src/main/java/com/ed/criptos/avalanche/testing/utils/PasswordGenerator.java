@@ -18,7 +18,7 @@ public class PasswordGenerator {
     private static final String LCaseChars = "abcdefghijklmnñopqrstuvwxyz";
     private static final String UCaseChars = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
     private static final String NumericChars = "0123456789";
-    private static final String SpecialChars = "*$-+?_&=!%{}/";
+    private static final String SpecialChars = "*$-+?_&!%{}/";
 
     public static String GenerateRandomString(int minLength, int maxLength, int minLCaseCount, int minUCaseCount, int minNumCount, int minSpecialCount) {
         char[] randomString;

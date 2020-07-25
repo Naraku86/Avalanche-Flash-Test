@@ -12,6 +12,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,95 +31,58 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        System.out.println("Iniciando pruebas");
-        if(!System.getProperties().contains("url")){
-            System.setProperty("url", "http://192.168.100.67:9650");
+        System.out.println(" _____    _         ___  _   _  ___       _____         _   \n"
+                + "|  ___|  | |       / _ \\| | | |/ _ \\     |_   _|       | |  \n"
+                + "| |__  __| |______/ /_\\ \\ | | / /_\\ \\______| | ___  ___| |_ \n"
+                + "|  __|/ _` |______|  _  | | | |  _  |______| |/ _ \\/ __| __|\n"
+                + "| |__| (_| |      | | | \\ \\_/ / | | |      | |  __/\\__ \\ |_ \n"
+                + "\\____/\\__,_|      \\_| |_/\\___/\\_| |_/      \\_/\\___||___/\\__|\n"
+                + "                                                            \n"
+                + "                                                            ");
+
+       
+
+        if (!System.getProperties().containsKey("ava.node.url")) {
+            System.setProperty("ava.node.url", "http://127.0.0.1:9650");
         }
-        
-        String usuario_base= PasswordGenerator.GenerateRandomString(5, 5, 1, 1, 1, 1);
-        
-        for (int i = 0; i < 1000; i++) {
-            
-            Keystore creaUsuario= new Keystore(String.format("%s%010d", usuario_base,i), PasswordGenerator.GenerateRandomString(15, 15, 1, 1, 1, 1));
+
+        int numberTest = Integer.parseInt(System.getProperty("ava.test.number", "100"));
+
+        boolean verbose = Boolean.valueOf(System.getProperty("ava.verbose", "true"));
+
+        String usuario_base = PasswordGenerator.GenerateRandomString(5, 5, 1, 1, 1, 1);
+
+        List<String> results = new ArrayList<>();
+        results.add("USERNAME,PASSWORD,user,METHOD_CREATE,METHOD_CREATE,METHOD_EXPORT,METHOD_EXPORT,METHOD_IMPORT,METHOD_IMPORT,METHOD_DELETE,METHOD_DELETE");
+
+        long inicio=System.currentTimeMillis();
+         System.out.println("Iniciando pruebas");
+        for (int i = 0; i < numberTest; i++) {
+
+            Keystore creaUsuario = new Keystore(String.format("%s%010d", usuario_base, i), PasswordGenerator.GenerateRandomString(15, 15, 1, 1, 1, 1));
             creaUsuario.create();
             creaUsuario.exportUser();
             creaUsuario.delete();
             creaUsuario.import_user();
             creaUsuario.delete();
-            System.out.println(i+"  "+creaUsuario.toString());
-
+            if (verbose) {
+                System.out.println(i + "  " + creaUsuario.toString());
+            }
+            results.add(creaUsuario.toStringCSV());
         }
+        inicio=System.currentTimeMillis()-inicio;
+        
+        System.out.println("Numero de pruebas ["+numberTest+"] llamadas al API["+(numberTest*5)+"] - Tiempo ["+(inicio/1000)+"]Seg | Promedio de Llamadas ["+((numberTest*5)/(inicio/1000)) +"]");
 
-       // Main obj = new Main();
+        Files.write(Paths.get("result_test_keystore.csv"), results);
+
+        // Main obj = new Main();
         //System.out.println("Testing 1 - Send Http GET request");
         //obj.sendGet();
-
         //System.out.println("Testing 2 - Send Http POST request");
         //obj.sendPost();
-
     }
 
-    private void sendGet() throws Exception {
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .GET()
-                .uri(URI.create("https://httpbin.org/get"))
-                .setHeader("User-Agent", "Java 11 HttpClient Bot")
-                .build();
-
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-        // print status code
-        System.out.println(response.statusCode());
-
-        // print response body
-        System.out.println(response.body());
-
-    }
-
-    private void sendPost() throws Exception {
-
-        // form parameters
-      
-        String json = "{\n"
-                + "    \"jsonrpc\":\"2.0\",\n"
-                + "    \"id\"     :4,\n"
-                + "    \"method\" :\"avm.getBalance\",\n"
-                + "    \"params\" :{\n"
-                + "        \"address\":\"X-DgFwFVXgPEySynMFwwJmc1BVX5Uk5zYbU\",\n"
-                + "        \"assetID\"  :\"AVA\"\n"
-                + "    }\n"
-                + "}";
-        HttpRequest request = HttpRequest.newBuilder()
-                .POST(HttpRequest.BodyPublishers.ofString(json))
-                //.uri(URI.create("http://ed.ava.node:9650/ext/bc/X"))
-                .uri(URI.create("http://192.168.100.67:9650/ext/bc/X"))
-                //.setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
-                .header("Content-Type", "application/json")
-                .build();
-
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-        // print status code
-        System.out.println(response.statusCode());
-
-        // print response body
-        System.out.println(response.body());
-
-    }
-
-    private static HttpRequest.BodyPublisher buildFormDataFromMap(Map<Object, Object> data) {
-        var builder = new StringBuilder();
-        for (Map.Entry<Object, Object> entry : data.entrySet()) {
-            if (builder.length() > 0) {
-                builder.append("&");
-            }
-            builder.append(URLEncoder.encode(entry.getKey().toString(), StandardCharsets.UTF_8));
-            builder.append("=");
-            builder.append(URLEncoder.encode(entry.getValue().toString(), StandardCharsets.UTF_8));
-        }
-        System.out.println(builder.toString());
-        return HttpRequest.BodyPublishers.ofString(builder.toString());
-    }
+    
 
 }
